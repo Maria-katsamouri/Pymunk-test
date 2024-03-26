@@ -1,0 +1,81 @@
+import pygame
+from pygame.locals import *
+import pymunk
+import pymunk.pygame_util
+
+WHITE = (255, 255, 255)
+FPS = 60
+
+# Class for the player's car
+class Car:
+    def __init__(self, space, x, y):
+        self.space = space
+        self.body = pymunk.Body(1, 100, body_type=pymunk.Body.DYNAMIC)
+        self.body.position = x, y
+        self.shape = pymunk.Poly.create_box(self.body, (50, 30))
+        self.shape.friction = 0.5
+        self.space.add(self.body, self.shape)
+
+    def move_forward(self):
+        self.body.apply_force_at_local_point((0, 1000), (0, 0))
+
+    def move_backward(self):
+        self.body.apply_force_at_local_point((0, -500), (0, 0))
+
+    def turn_left(self):
+        pass
+    def turn_right(self):
+        pass
+    
+# Class for walls
+class Wall:
+    def __init__(self, space, x, y, width, height):
+        self.space = space
+        self.body = pymunk.Body(body_type=pymunk.Body.STATIC)
+        self.body.position = x, y
+        self.shape = pymunk.Poly.create_box(self.body, (width, height))
+        self.space.add(self.body, self.shape)
+
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((800, 600))
+
+    clock = pygame.time.Clock()
+    run = True
+
+    space = pymunk.Space()
+    space.gravity = (0, 0)
+
+    car = Car(space, 400, 300)
+
+    wall_top = Wall(space, 0, 0, 800, 10)
+    wall_bottom = Wall(space, 0, 590, 800, 10)
+    wall_left = Wall(space, 0, 0, 10, 600)
+    wall_right = Wall(space, 790, 0, 10, 600)
+
+    draw_options = pymunk.pygame_util.DrawOptions(screen)
+
+    while run:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                run = False
+            elif event.type == KEYDOWN:
+                if event.key == K_UP:
+                    car.move_forward()
+                elif event.key == K_DOWN:
+                    car.move_backward()
+                elif event.key == K_LEFT:
+                    car.turn_left()
+                elif event.key == K_RIGHT:
+                    car.turn_right()
+
+        space.step(1 / 60.0)
+        screen.fill(WHITE)
+        space.debug_draw(draw_options)
+        pygame.display.update()
+        clock.tick(FPS)
+
+    pygame.quit()
+
+if __name__ == "__main__":
+    main()
