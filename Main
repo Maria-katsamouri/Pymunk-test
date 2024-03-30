@@ -16,11 +16,8 @@ class Car:
         self.shape.friction = 0.5
         self.space.add(self.body, self.shape)
 
-    def move_forward(self):
-        self.body.apply_force_at_local_point((0, 1000), (0, 0))
-
-    def move_backward(self):
-        self.body.apply_force_at_local_point((0, -500), (0, 0))
+    def apply_force(self,force):
+        self.body.apply_force_at_local_point((0, force), (0, 0))
 
     def turn_left(self):
         pass
@@ -59,16 +56,23 @@ def main():
         for event in pygame.event.get():
             if event.type == QUIT:
                 run = False
-            elif event.type == KEYDOWN:
-                if event.key == K_UP:
-                    car.move_forward()
-                elif event.key == K_DOWN:
-                    car.move_backward()
-                elif event.key == K_LEFT:
-                    car.turn_left()
-                elif event.key == K_RIGHT:
-                    car.turn_right()
+            
+            keys = pygame.key.get_pressed()
+            if keys[K_UP]:
+                car.apply_force(1000)
+            elif keys[K_DOWN]:
+                car.apply_force(-500)
+            else:
+                if car.body.velocity[1] > 0:
+                    car.apply_force(-100)
+                if car.body.velocity[1] < 0:
+                    car.apply_force(100)
 
+            if keys[K_LEFT]:
+                car.turn_left()
+            if keys[K_RIGHT]:
+                car.turn_right
+       
         space.step(1 / 60.0)
         screen.fill(WHITE)
         space.debug_draw(draw_options)
