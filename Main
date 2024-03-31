@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 import pymunk
 import pymunk.pygame_util
+import math
 
 WHITE = (255, 255, 255)
 FPS = 60
@@ -19,11 +20,15 @@ class Car:
     def apply_force(self, force):
         self.body.apply_force_at_local_point((0, force), (0, 0))
 
-    def turn_left(self, steering):
-        self.body.apply_force_at_local_point((steering, 0), (750, 0))
+    def turn_left(self):
+        angle = self.body.angle - math.pi / 16  
+        self.body.angle = angle
+        self.body.angular_velocity = 0
 
-    def turn_right(self, steering):
-        self.body.apply_force_at_local_point((steering, 0), (750, 0))
+    def turn_right(self):
+        angle = self.body.angle + math.pi / 16  
+        self.body.angle = angle
+        self.body.angular_velocity = 0
 
 # Class for walls
 class Wall:
@@ -53,39 +58,20 @@ def main():
 
     draw_options = pymunk.pygame_util.DrawOptions(screen)
 
-    def car_wall_collision(arbiter, space, data):
-        car_body = arbiter.shapes[0].body
-        wall_body = arbiter.shapes[1].body
-        car_body.apply_impulse_at_world_point((0, 1000), car_body.position)
-        return True
-
-    car_shape = car.shape
-    wall_shapes = [wall_top.shape, wall_bottom.shape, wall_left.shape, wall_right.shape]
-    for wall_shape in wall_shapes:
-        car_wall_handler = space.add_collision_handler(0, 0)
-        car_wall_handler.begin = car_wall_collision
-        car_wall_handler.shapes = [car_shape, wall_shape]
-
     while run:
         for event in pygame.event.get():
             if event.type == QUIT:
                 run = False
-                
             keys = pygame.key.get_pressed()
             if keys[K_UP]:
                 car.apply_force(-1000)
             elif keys[K_DOWN]:
                 car.apply_force(500)
-            else:
-                if car.body.velocity[1] > 0:
-                    car.apply_force(-100)
-                if car.body.velocity[1] < 0:
-                    car.apply_force(100)
 
             if keys[K_LEFT]:
-                car.turn_left(-750)
+                car.turn_left()
             if keys[K_RIGHT]:
-                car.turn_right(750)
+                car.turn_right()
 
         space.step(1 / 60.0)
         screen.fill(WHITE)
